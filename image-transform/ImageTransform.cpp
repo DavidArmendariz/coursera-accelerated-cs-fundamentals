@@ -74,13 +74,22 @@ PNG createSpotlight(PNG image, int centerX, int centerY)
     for (unsigned y = 0; y < image.height(); y++)
     {
       HSLAPixel &pixel = image.getPixel(x, y);
-      int distanceFromCenter = int(std::sqrt(x * x + y * y));
-      double decreaseInLuminance = 0.5 * distanceFromCenter;
+      int distanceFromCenter = int(std::sqrt(std::pow(centerX - int(x), 2) + std::pow(centerY - int(y), 2)));
+      double decreaseInLuminanceFactor;
+
+      if (distanceFromCenter >= 160)
+      {
+        decreaseInLuminanceFactor = 0.2;
+      }
+      else
+      {
+        decreaseInLuminanceFactor = 1 - (0.5 * distanceFromCenter) / 100;
+      }
 
       // `pixel` is a reference to the memory stored inside of the PNG `image`,
       // which means you're changing the image directly. No need to `set`
       // the pixel since you're directly changing the memory of the image.
-      pixel.l = pixel.l - decreaseInLuminance;
+      pixel.l = pixel.l * decreaseInLuminanceFactor;
     }
   }
 
@@ -100,6 +109,20 @@ PNG createSpotlight(PNG image, int centerX, int centerY)
 PNG illinify(PNG image)
 {
 
+  for (unsigned x = 0; x < image.width(); x++)
+  {
+    for (unsigned y = 0; y < image.height(); y++)
+    {
+      HSLAPixel &pixel = image.getPixel(x, y);
+      double distanceFromIlliniOrange = std::min(std::abs(11 - pixel.h), std::abs(371 - pixel.h));
+      double distanceFromIlliniBlue = std::abs(216 - pixel.h);
+
+      // `pixel` is a reference to the memory stored inside of the PNG `image`,
+      // which means you're changing the image directly. No need to `set`
+      // the pixel since you're directly changing the memory of the image.
+      pixel.h = distanceFromIlliniBlue < distanceFromIlliniOrange ? 216 : 11;
+    }
+  }
   return image;
 }
 
@@ -117,6 +140,21 @@ PNG illinify(PNG image)
  */
 PNG watermark(PNG firstImage, PNG secondImage)
 {
+  for (unsigned x = 0; x < firstImage.width(); x++)
+  {
+    for (unsigned y = 0; y < firstImage.height(); y++)
+    {
+      HSLAPixel &pixel = firstImage.getPixel(x, y);
+      HSLAPixel &pixelFromSecondImage = secondImage.getPixel(x, y);
 
+      // `pixel` is a reference to the memory stored inside of the PNG `image`,
+      // which means you're changing the image directly. No need to `set`
+      // the pixel since you're directly changing the memory of the image.
+      if (pixelFromSecondImage.l == 1)
+      {
+        pixel.l = pixel.l + 0.2 > 1 ? 1 : pixel.l + 0.2;
+      }
+    }
+  }
   return firstImage;
 }
