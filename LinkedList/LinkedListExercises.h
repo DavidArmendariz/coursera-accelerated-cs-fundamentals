@@ -155,11 +155,7 @@ void LinkedList<T>::insertOrdered(const T &newData)
       }
       else if (!nextNode)
       {
-        newNode->prev = currentNode;
-        newNode->next = nullptr;
-        currentNode->next = newNode;
-        tail_ = newNode;
-        size_++;
+        pushBack(newData);
         break;
       }
     }
@@ -291,5 +287,58 @@ LinkedList<T> LinkedList<T>::merge(const LinkedList<T> &other) const
   // notice that all of our nodes are created on the heap? The part of the
   // list that we pass back is really small; it just contains two pointers
   // and an int.)
+
+  if (left.empty())
+  {
+    return right;
+  }
+
+  if (right.empty())
+  {
+    return left;
+  }
+
+  merged = left;
+
+  Node *currentNode = merged.head_;
+
+  while (currentNode && !right.empty())
+  {
+    T newData = right.front();
+
+    if (newData <= currentNode->data)
+    {
+      merged.pushFront(newData);
+      right.popFront();
+      currentNode = merged.head_;
+      continue;
+    }
+
+    if (newData >= currentNode->data)
+    {
+      Node *nextNode = currentNode->next;
+      if (nextNode && nextNode->data >= newData)
+      {
+        Node *newNode = new Node(newData);
+        newNode->prev = currentNode;
+        newNode->next = nextNode;
+        currentNode->next = newNode;
+        nextNode->prev = newNode;
+        merged.size_++;
+        right.popFront();
+        currentNode = newNode;
+        continue;
+      }
+      else if (!nextNode)
+      {
+        merged.pushBack(newData);
+        right.popFront();
+        currentNode = merged.tail_;
+        continue;
+      }
+    }
+    currentNode = currentNode->next;
+  }
+
   return merged;
 }
