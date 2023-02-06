@@ -348,7 +348,7 @@ std::vector<T> traverseLevels(GenericTree<T> &tree)
 
   while (!queue.empty())
   {
-    TreeNode *node = queue.back();
+    TreeNode *node = queue.front();
     results.push_back(node->data);
     queue.pop();
     for (TreeNode *child : node->childrenPtrs)
